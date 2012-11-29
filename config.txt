@@ -1,8 +1,0 @@
-sx=-1
-sy=768
-thumbx=640
-thumby=480
-keyleft=a|\\75
-keyright=s|\\77
-keystart=1|f|2|k
-keyquit=`
