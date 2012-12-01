@@ -16,7 +16,7 @@
 #include once "Inc/key_match.bas"
 
 Type applesauce_type
-  Const game_max = 10
+  Const game_max = 100
   
   Declare Constructor()
   Declare Destructor()
