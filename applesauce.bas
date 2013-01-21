@@ -76,13 +76,11 @@ Sub applesauce_type.menu()
   Const ttbomb = 16
   
   Dim As Integer selected_game = 1, hijackcountdown, timebomb = 9999, mx, my, mb
-  Dim As HWND gameWindow
   Dim As Double offset, offset_t
   Dim As String key
   
   offset = (config.getInt("sx") - getConfig->getInt("thumbx")) \ 2 - (getConfig->getInt("thumbx") + 10)
   Windowtitle("Applesauce")
-  screencontrol(FB.GET_WINDOW_HANDLE, cast(Integer, gameWindow))
   
   Do
     'recover in case windows apps hijack focus; run this every minute
