@@ -6,71 +6,66 @@
 #include "crt.bi"
 #include once "crt/process.bi"
 
-enum state_manager_enum
+Enum state_manager_enum
   minimized  = 1
   active     = 2
   outoffocus = 3
-end enum
+End Enum
 
-type state_manager_type
+Type state_manager_type
   As HWND gameWindow
   
-  declare constructor ()
+  Declare Sub setState(state As state_manager_enum)
+  Declare Function getState() As state_manager_enum
   
-  declare sub setState(state as state_manager_enum)
-  declare function getState() as state_manager_enum
-  
-  declare sub goAwayMouse()
-  declare sub altTab()
-  declare function isMinimized() as integer
-  declare function hasFocus() as integer
-end type
+  Declare Sub goAwayMouse()
+  Declare Sub altTab()
+  Declare Function isMinimized() As Integer
+  Declare Function hasFocus() As Integer
+End Type
 
-constructor state_manager_type ()
-  screencontrol(FB.GET_WINDOW_HANDLE, cast(Integer, gameWindow))
-end constructor
-
-sub state_manager_type.setState(state as state_manager_enum)
+Sub state_manager_type.setState(state As state_manager_enum)
   'note: cannot set state to outoffocus
   
-  dim as state_manager_enum old = this.getState()
-  dim as integer handle
+  Dim As state_manager_enum old = this.getState()
+  Dim As Integer handle
   
   'minimize this window
   screencontrol(fb.get_window_handle, handle)
   
-  if old = state then return
+  If old = state Then Return
   
-  if state = state_manager_enum.minimized then
+  If state = state_manager_enum.minimized Then
     'only one path to minimized state
     ShowWindow(cast(hwnd, handle), SW_MINIMIZE)
-    sleep(500, 1)
-  elseif state = state_manager_enum.active and old = state_manager_enum.minimized then
+    Sleep(500, 1)
+  Elseif state = state_manager_enum.active And old = state_manager_enum.minimized Then
     'restore window to get to active state from minimized
     ShowWindow(cast(hwnd, handle), SW_RESTORE)
-    sleep(500, 1)
+    Sleep(500, 1)
     SetForegroundWindow(gameWindow)
     'restored window might not have focus
-    if not hasFocus() then altTab()
-  elseif state = state_manager_enum.active and old = state_manager_enum.outoffocus then
+    If Not hasFocus() Then altTab()
+  Elseif state = state_manager_enum.active And old = state_manager_enum.outoffocus Then
     'use alt+tab to get focus back
     altTab()
-  end if
-end sub
+  End If
+End Sub
 
-function state_manager_type.getState() as state_manager_enum
-  if isMinimized() then
-    return state_manager_enum.minimized
-  end if
-  if not hasFocus() then return state_manager_enum.outoffocus
-  return state_manager_enum.active
-end function
+Function state_manager_type.getState() As state_manager_enum
+  if not gameWindow then screencontrol(FB.GET_WINDOW_HANDLE, cast(Integer, gameWindow))
+  If isMinimized() Then
+    Return state_manager_enum.minimized
+  End If
+  If Not hasFocus() Then Return state_manager_enum.outoffocus
+  Return state_manager_enum.active
+End Function
 
-sub state_manager_type.goAwayMouse()
-  setmouse(0, 0, 0)
-end sub
+Sub state_manager_type.goAwayMouse()
+  Setmouse(0, 0, 0)
+End Sub
 
-sub state_manager_type.altTab()
+Sub state_manager_type.altTab()
   Dim As INPUT_ ki, ki2(0 To 1)
   
   ki2(0).type = INPUT_KEYBOARD
@@ -89,16 +84,16 @@ sub state_manager_type.altTab()
   ki2(1).ki.dwFlags = KEYEVENTF_KEYUP
   SendInput(2, @ki2(0), Sizeof(ki))
   Sleep(50, 1)
-end sub
+End Sub
 
-function state_manager_type.isMinimized() as integer
-  dim as WINDOWPLACEMENT wp
-  wp.length = sizeof(wp)
+Function state_manager_type.isMinimized() As Integer
+  Dim As WINDOWPLACEMENT wp
+  wp.length = Sizeof(wp)
   GetWindowPlacement(gameWindow, @wp)
-  return wp.showCmd = SW_SHOWMINIMIZED
-end function
+  Return wp.showCmd = SW_SHOWMINIMIZED
+End Function
 
-function state_manager_type.hasFocus() as integer
+Function state_manager_type.hasFocus() As Integer
   Dim As INPUT_ ki
   
   While Inkey() > "": Wend
@@ -114,5 +109,5 @@ function state_manager_type.hasFocus() as integer
   SendInput(1, @ki, Sizeof(ki))
   Sleep(50, 1)
 
-  return Lcase(Inkey()) = "q"
-end function
+  Return Lcase(Inkey()) = "q"
+End Function
