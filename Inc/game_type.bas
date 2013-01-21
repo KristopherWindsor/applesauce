@@ -47,12 +47,6 @@ constructor game_type(path as string)
 end constructor
 
 sub game_type.run ()
-  dim as integer handle
-  
-  'minimize this window
-  screencontrol(fb.get_window_handle, handle)
-  ShowWindow(cast(hwnd, handle), SW_MINIMIZE)
-  
   if this.run_mapper then
     _spawnlp(_P_NOWAIT, exepath() + "/Games/" + this.path + "/ahk.exe", " ", null)
   end if
@@ -73,9 +67,4 @@ sub game_type.run ()
       SendInput(1, @ki, Sizeof(ki))
     next i
   end if
-  
-  'restore window
-  ShowWindow(cast(hwnd, handle), SW_RESTORE)
-  Sleep(500, 1)
 end sub
-

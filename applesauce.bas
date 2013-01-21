@@ -14,6 +14,7 @@
 #include once "Inc/linkedlist_type.bas"
 #include once "Inc/dirlist.bas"
 #include once "Inc/key_match.bas"
+#include once "Inc/state_manager_type.bas"
 
 Type applesauce_type
   Const game_max = 100
@@ -21,7 +22,6 @@ Type applesauce_type
   Declare Constructor()
   Declare Destructor()
   Declare Sub menu()
-  Declare Sub focus(gameWindow As HWND)
   
   As Integer game_total
   As game_type Ptr game(1 To game_max)
@@ -29,6 +29,7 @@ Type applesauce_type
   As fb.image Ptr logo
   
   As config_type config
+  As state_manager_type state_manager
 End Type
 
 Constructor applesauce_type()
@@ -82,14 +83,11 @@ Sub applesauce_type.menu()
   offset = (config.getInt("sx") - getConfig->getInt("thumbx")) \ 2 - (getConfig->getInt("thumbx") + 10)
   Windowtitle("Applesauce")
   screencontrol(FB.GET_WINDOW_HANDLE, cast(Integer, gameWindow))
- 'debug setmouse(0, 0, 0)
   
   Do
-    'recover in case windows apps hijack focus; run this test right after game returns and every 5 minutes
+    'recover in case windows apps hijack focus; run this every minute
     hijackcountdown += 1
-    If hijackcountdown Mod 300 = 0 Then
-      focus(gameWindow)
-    End If
+    If hijackcountdown Mod 3600 = 0 Then state_manager.setState(state_manager_enum.active)
     
     key = Inkey()
     If key_match(key, config.get("keyleft")) then
@@ -108,10 +106,10 @@ Sub applesauce_type.menu()
     timebomb += 1
     If timebomb = ttbomb Then
       Windowtitle("Applesauce (Idle)")
+      state_manager.setState(state_manager_enum.minimized)
       game(selected_game)->Run()
-      SetForegroundWindow(gameWindow)
+      state_manager.setState(state_manager_enum.active)
       Windowtitle("Applesauce")
-      hijackcountdown = -10
     End If
     
     Screenlock()
@@ -146,51 +144,6 @@ Sub applesauce_type.menu()
     
     Sleep(18, 1)
   Loop
-End Sub
-
-Sub applesauce_type.focus(gameWindow As HWND)
-  Dim As INPUT_ ki, ki2(0 To 1)
-  
-  SetForegroundWindow(gameWindow)
-  Setmouse(0, 0)
-  While Inkey() > "": Wend
-
-  ki.type = INPUT_KEYBOARD
-  ki.ki.wVk = VK_Q
-  ki.ki.dwFlags = 0
-  SendInput(1, @ki, Sizeof(ki))
-  Sleep(100, 1)
-  ki.type = INPUT_KEYBOARD
-  ki.ki.wVk = VK_Q
-  ki.ki.dwFlags = KEYEVENTF_KEYUP
-  SendInput(1, @ki, Sizeof(ki))
-
-  If Lcase(Inkey()) <> "q" Then
-    ki2(0).type = INPUT_KEYBOARD
-    ki2(0).ki.wVk = VK_MENU
-    ki2(0).ki.dwFlags = 0
-    ki2(1).type = INPUT_KEYBOARD
-    ki2(1).ki.wVk = VK_TAB
-    ki2(1).ki.dwFlags = 0
-    SendInput(2, @ki2(0), Sizeof(ki))
-    Sleep(100, 1)
-    ki2(0).type = INPUT_KEYBOARD
-    ki2(0).ki.wVk = VK_TAB
-    ki2(0).ki.dwFlags = KEYEVENTF_KEYUP
-    ki2(1).type = INPUT_KEYBOARD
-    ki2(1).ki.wVk = VK_TAB
-    ki2(1).ki.dwFlags = 0
-    SendInput(2, @ki2(0), Sizeof(ki))
-    Sleep(100, 1)
-    ki2(0).type = INPUT_KEYBOARD
-    ki2(0).ki.wVk = VK_TAB
-    ki2(0).ki.dwFlags = KEYEVENTF_KEYUP
-    ki2(1).type = INPUT_KEYBOARD
-    ki2(1).ki.wVk = VK_MENU
-    ki2(1).ki.dwFlags = KEYEVENTF_KEYUP
-    SendInput(2, @ki2(0), Sizeof(ki))
-    Sleep(100, 1)
-  End If
 End Sub
 
 Dim Shared As applesauce_type applesauce
